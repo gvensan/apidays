@@ -1,0 +1,361 @@
+# Event Flow
+#
+# 1. A new customer ticket is received and published to Solace.
+#   Topic: ${SOLACE_USER_NAME}/customer/tickets/new
+#   Payload Example:
+# {
+#   ticketId: "12345",
+#   customerId: "C001",
+#   message: "My order hasn't arrived and the tracking number doesn't work. I've tried contacting support several times without a response. I'm really frustrated!",
+#   channel: "email"
+# }
+#  2. The ticket is classified and assigned with a sentiment and priority by OpenAI and is published back to Solace.
+#   Topic: ${SOLACE_USER_NAME}/customer/tickets/classified/{ticketId}/{classification}
+#   Payload Example:
+# {
+#   ticketId: "12345",
+#   customerId: "C001",
+#   message: "My order hasn't arrived and the tracking number doesn't work. I've tried contacting support several times without a response. I'm really frustrated!",
+#   channel: "email",
+#   sentiment: "Negative",
+#   classification: "Shipping"
+# }
+#
+#  3. The classified ticket is assigned with a severity & priority by OpenAI and is published back to Solace.
+#   Topic: ${SOLACE_USER_NAME}/customer/tickets/prioritized/{ticketId}/{priority}
+#   Payload Example:
+# {
+#   ticketId: "12345",
+#   customerId: "C001",
+#   message: "My order hasn't arrived and the tracking number doesn't work. I've tried contacting support several times without a response. I'm really frustrated!",
+#   channel: "email",
+#   sentiment: "Negative",
+#   classification: "Shipping",
+#   priority: "Critical"
+# }
+#
+#  4. The ticket is escalated by OpenAI and the escalation is published back to Solace.
+#   Topic: ${SOLACE_USER_NAME}/customer/tickets/escalated/{ticketId}/{escalation}
+#   Payload Example:
+# {
+#   ticketId: "12345",
+#   customerId: "C001",
+#   message: "My order hasn't arrived and the tracking number doesn't work. I've tried contacting support several times without a response. I'm really frustrated!",
+#   channel: "email",
+#   sentiment: "Negative",
+#   classification: "Shipping",
+#   priority: "Critical",
+#   escalation: "True"
+# }
+#
+# Dependencies:
+# pip install -U langchain_openai openai
+#
+# required ENV variables:
+# - OPENAI_API_KEY
+# - OPENAI_API_ENDPOINT
+# - OPENAI_MODEL_NAME
+# - SOLACE_BROKER_URL
+# - SOLACE_BROKER_USERNAME
+# - SOLACE_BROKER_PASSWORD
+# - SOLACE_BROKER_VPN
+
+---
+log:
+  stdout_log_level: DEBUG
+  log_file_level: INFO
+  log_file: solace_ai_connector.log
+
+shared_config:
+  - broker_config: &broker_connection
+      broker_type: solace
+      broker_url: ${SOLACE_BROKER_URL}
+      broker_username: ${SOLACE_BROKER_USERNAME}
+      broker_password: ${SOLACE_BROKER_PASSWORD}
+      broker_vpn: ${SOLACE_BROKER_VPN}
+
+# Take from input broker and publish back to Solace
+flows:
+  # 1: Classification of Incoming Tickets ${SOLACE_USER_NAME}/customer/tickets/new
+  - name: Classification of Incoming Tickets
+    components:
+      # Input from a Solace broker
+      - component_name: solace_sw_broker
+        component_module: broker_input
+        component_config:
+          <<: *broker_connection
+          broker_subscriptions:
+            - topic: ${SOLACE_USER_NAME}/customer/tickets/new
+              qos: 1
+          payload_encoding: utf-8
+          payload_format: json
+
+      #
+      # MAKE LLM request for detect sentiment
+      #
+      - component_name: llm_sentiment
+        component_module: openai_chat_model
+        component_config:
+          api_key: ${OPENAI_API_KEY}
+          base_url: ${OPENAI_API_ENDPOINT}
+          model: ${OPENAI_MODEL_NAME}
+          temperature: 0.01
+          
+        input_selection:
+          source_expression: user_data.llm_input
+        input_transforms:
+          - type: copy
+            source_expression: input.payload
+            dest_expression: user_data.output:payload
+          - type: copy
+            source_expression: |
+              template: You are a helpful AI assistant who can detect the sentiment of the issue captured in the ticket and assign sentiment as
+              one of the following: Positive, Negative, Neutral. Return the identified sentiment string.
+              Please help with the user's request below:
+              <user-question>
+              {{text://input.payload:message}}
+              </user-question>
+            dest_expression: user_data.llm_input:messages.0.content
+          - type: copy
+            source_expression: static:user
+            dest_expression: user_data.llm_input:messages.0.role
+      
+      #
+      # Copy sentiment and DUMP to stdout
+      #
+      - component_name: debug_print_classification
+        component_module: stdout_output
+        component_config:
+          add_new_line_between_messages: true
+        input_selection:
+          source_expression: user_data.output
+        input_transforms:
+          - type: copy
+            source_expression: previous:content
+            dest_expression: input.payload:sentiment
+
+      #
+      # MAKE LLM request for detect sentiment
+      #
+      - component_name: llm_classification
+        component_module: openai_chat_model
+        component_config:
+          api_key: ${OPENAI_API_KEY}
+          base_url: ${OPENAI_API_ENDPOINT}
+          model: ${OPENAI_MODEL_NAME}
+          temperature: 0.01
+          
+        input_selection:
+          source_expression: user_data.llm_input
+        input_transforms:
+          - type: copy
+            source_expression: input.payload
+            dest_expression: user_data.output:payload
+          - type: copy
+            source_expression: |
+              template: You are a helpful AI assistant who can analyze the problem described in the message and classify the issue as one of the following: Feedback, Quality, Shipping, Refund and Others. Return the identified classification string without quotes.
+              Please help with the user's request below:
+              <user-question>
+              {{text://input.payload:message}}
+              </user-question>
+            dest_expression: user_data.llm_input:messages.0.content
+          - type: copy
+            source_expression: static:user
+            dest_expression: user_data.llm_input:messages.0.role
+      
+      #
+      # Copy sentiment and DUMP to stdout
+      #
+      - component_name: debug_print_classification
+        component_module: stdout_output
+        component_config:
+          add_new_line_between_messages: true
+        input_selection:
+          source_expression: user_data.output
+        input_transforms:
+          - type: copy
+            source_expression: previous:content
+            dest_expression: input.payload:classification
+
+      #
+      # PUBLISH to Broker
+      #
+      - component_name: send_classification_response
+        component_module: broker_output
+        component_config:
+          <<: *broker_connection
+          payload_encoding: utf-8
+          payload_format: json
+          copy_user_properties: true
+        input_transforms:
+          - type: copy
+            source_expression: template:${SOLACE_USER_NAME}/customer/tickets/classified/{{text://input.payload:ticketId}}/{{text://input.payload:classification}}
+            dest_expression: user_data.output:topic
+        input_selection:
+          source_expression: user_data.output
+  
+  # 2: Assign Priority to Incoming Tickets ${SOLACE_USER_NAME}/customer/tickets/classified/*
+  - name: Prioritization of Incoming Tickets
+    components:
+      # Input from a Solace broker
+      - component_name: solace_sw_broker
+        component_module: broker_input
+        component_config:
+          <<: *broker_connection
+          broker_subscriptions:
+            - topic: ${SOLACE_USER_NAME}/customer/tickets/classified/*/*
+              qos: 1
+          payload_encoding: utf-8
+          payload_format: json
+
+      #
+      # MAKE LLM request for detect sentiment
+      #
+      - component_name: llm_proritization
+        component_module: openai_chat_model
+        component_config:
+          api_key: ${OPENAI_API_KEY}
+          base_url: ${OPENAI_API_ENDPOINT}
+          model: ${OPENAI_MODEL_NAME}
+          temperature: 0.01
+          
+        input_selection:
+          source_expression: user_data.llm_input
+        input_transforms:
+          - type: copy
+            source_expression: input.payload
+            dest_expression: user_data.output:payload
+          - type: copy
+            source_expression: |
+              template: You are a helpful AI assistant who can review the identified classification and sentiment, and assign a priority level as
+              one of the following: Critical, High, Medium, Low. Return the identified priority string.
+              Please help with the user's request below:
+              <user-question>
+              {{text://input.payload}}
+              </user-question>
+            dest_expression: user_data.llm_input:messages.0.content
+          - type: copy
+            source_expression: static:user
+            dest_expression: user_data.llm_input:messages.0.role
+      
+      #
+      # Copy priority and DUMP to stdout
+      #
+      - component_name: debug_print_prioritization
+        component_module: stdout_output
+        component_config:
+          add_new_line_between_messages: true
+        input_selection:
+          source_expression: user_data.output
+        input_transforms:
+          - type: copy
+            source_expression: previous:content
+            dest_expression: input.payload:priority
+
+      #
+      # PUBLISH to Broker
+      #
+      - component_name: send_prioritization_response
+        component_module: broker_output
+        component_config:
+          <<: *broker_connection
+          payload_encoding: utf-8
+          payload_format: json
+          copy_user_properties: true
+        input_transforms:
+          - type: copy
+            source_expression: template:${SOLACE_USER_NAME}/customer/tickets/prioritized/{{text://input.payload:ticketId}}/{{text://input.payload:priority}}
+            dest_expression: user_data.output:topic
+        input_selection:
+          source_expression: user_data.output
+
+  # 3: Check if escalation required
+  - name: Escalation of Incoming Tickets
+    components:
+      # Input from a Solace broker
+      - component_name: solace_sw_broker
+        component_module: broker_input
+        component_config:
+          <<: *broker_connection
+          broker_subscriptions:
+            - topic: ${SOLACE_USER_NAME}/customer/tickets/prioritized/*/*
+              qos: 1
+          payload_encoding: utf-8
+          payload_format: json
+
+      #
+      # MAKE LLM request for detect sentiment
+      #
+      - component_name: llm_proritization
+        component_module: openai_chat_model
+        component_config:
+          api_key: ${OPENAI_API_KEY}
+          base_url: ${OPENAI_API_ENDPOINT}
+          model: ${OPENAI_MODEL_NAME}
+          temperature: 0.01
+          
+        input_selection:
+          source_expression: user_data.llm_input
+        input_transforms:
+          - type: copy
+            source_expression: input.payload
+            dest_expression: user_data.output:payload
+          - type: copy
+            source_expression: |
+              template: You are a helpful AI assistant who can review the identified classification, sentiment and priority and determine whether an escalation is required or not. Simply return a boolean value - true or false.
+              Please help with the user's request below:
+              <user-question>
+              {{text://input.payload}}
+              </user-question>
+            dest_expression: user_data.llm_input:messages.0.content
+          - type: copy
+            source_expression: static:user
+            dest_expression: user_data.llm_input:messages.0.role
+      
+      #
+      # Copy escalation and DUMP to stdout
+      #
+      - component_name: debug_print_prioritization
+        component_module: stdout_output
+        component_config:
+          add_new_line_between_messages: true
+        input_selection:
+          source_expression: user_data.output
+        input_transforms:
+          - type: copy
+            source_expression: previous:content
+            dest_expression: input.payload:escalation
+          - type: copy
+            source_expression: 
+              invoke:
+                # If the layer number is less than the number of layers,
+                # modify the response for the next layer of agents
+                module: invoke_functions
+                function: if_else
+                params:
+                  positional:
+                    - invoke:
+                        module: invoke_functions
+                        function: equal
+                        params:
+                          positional:
+                            - evaluate_expression(input.payload:escalation)
+                            - "True"
+                    - true
+                    - false
+            dest_expression: user_data.temp:action
+      - component_name: send_escalation_response
+        component_module: broker_output
+        component_config:
+          <<: *broker_connection
+          payload_encoding: utf-8
+          payload_format: json
+          copy_user_properties: true
+        input_transforms:
+          - type: copy
+            source_expression: template:${SOLACE_USER_NAME}/customer/tickets/escalation/{{text://input.payload:ticketId}}/{{text://user_data.temp:action}}
+            dest_expression: user_data.output:topic
+        input_selection:
+          source_expression: user_data.output
+
+    

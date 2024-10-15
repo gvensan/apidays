@@ -1,0 +1,7 @@
+{
+  "ticketId": "12345",
+  "customerId": "C001",
+  "message": "My order hasn't arrived and the tracking number doesn't work. I've tried contacting support several times without a response. I'm really frustrated!",
+  "channel": "email"
+}
+

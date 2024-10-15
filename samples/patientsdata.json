@@ -1,0 +1,29 @@
+{
+  "texts": [
+    "Patient P001 at 2024-10-08 10:15:00 had a heart rate of 72 bpm, blood pressure of 118/78 mmHg, blood sugar level of 95 mg/dL, oxygen saturation at 98%, and respiration rate of 16 breaths per minute.",
+    "Patient P001 at 2024-10-08 10:16:00 had a heart rate of 74 bpm, blood pressure of 119/78 mmHg, blood sugar level of 96 mg/dL, oxygen saturation at 98%, and respiration rate of 16 breaths per minute.",
+    "Patient P001 at 2024-10-08 10:17:00 had a heart rate of 73 bpm, blood pressure of 118/79 mmHg, blood sugar level of 94 mg/dL, oxygen saturation at 97%, and respiration rate of 16 breaths per minute.",
+    "Patient P001 at 2024-10-08 10:18:00 had a heart rate of 72 bpm, blood pressure of 118/78 mmHg, blood sugar level of 95 mg/dL, oxygen saturation at 98%, and respiration rate of 16 breaths per minute.",
+    "Patient P001 at 2024-10-08 10:19:00 had a heart rate of 73 bpm, blood pressure of 118/78 mmHg, blood sugar level of 94 mg/dL, oxygen saturation at 97%, and respiration rate of 16 breaths per minute.",    
+    "Patient P002 at 2024-10-08 10:15:00 had a heart rate of 102 bpm, blood pressure of 165/95 mmHg, blood sugar level of 140 mg/dL, oxygen saturation at 94%, and respiration rate of 18 breaths per minute.",
+    "Patient P002 at 2024-10-08 10:16:00 had a heart rate of 104 bpm, blood pressure of 167/96 mmHg, blood sugar level of 142 mg/dL, oxygen saturation at 93%, and respiration rate of 19 breaths per minute.",
+    "Patient P002 at 2024-10-08 10:17:00 had a heart rate of 105 bpm, blood pressure of 170/98 mmHg, blood sugar level of 145 mg/dL, oxygen saturation at 92%, and respiration rate of 20 breaths per minute.",
+    "Patient P002 at 2024-10-08 10:18:00 had a heart rate of 108 bpm, blood pressure of 172/100 mmHg, blood sugar level of 147 mg/dL, oxygen saturation at 91%, and respiration rate of 21 breaths per minute.",
+    "Patient P002 at 2024-10-08 10:19:00 had a heart rate of 110 bpm, blood pressure of 175/102 mmHg, blood sugar level of 150 mg/dL, oxygen saturation at 90%, and respiration rate of 22 breaths per minute.",
+    "Patient P003 at 2024-10-08 10:15:00 had a heart rate of 120 bpm, blood pressure of 130/85 mmHg, blood sugar level of 55 mg/dL, oxygen saturation at 96%, and respiration rate of 22 breaths per minute.",
+    "Patient P003 at 2024-10-08 10:16:00 had a heart rate of 121 bpm, blood pressure of 132/86 mmHg, blood sugar level of 54 mg/dL, oxygen saturation at 95%, and respiration rate of 22 breaths per minute.",
+    "Patient P003 at 2024-10-08 10:17:00 had a heart rate of 122 bpm, blood pressure of 134/87 mmHg, blood sugar level of 53 mg/dL, oxygen saturation at 95%, and respiration rate of 23 breaths per minute.",
+    "Patient P003 at 2024-10-08 10:18:00 had a heart rate of 123 bpm, blood pressure of 135/88 mmHg, blood sugar level of 52 mg/dL, oxygen saturation at 94%, and respiration rate of 23 breaths per minute.",
+    "Patient P003 at 2024-10-08 10:19:00 had a heart rate of 125 bpm, blood pressure of 136/89 mmHg, blood sugar level of 50 mg/dL, oxygen saturation at 93%, and respiration rate of 24 breaths per minute.",
+    "Patient P004 at 2024-10-08 10:15:00 had a heart rate of 98 bpm, blood pressure of 140/90 mmHg, blood sugar level of 110 mg/dL, oxygen saturation at 87%, and respiration rate of 28 breaths per minute.",
+    "Patient P004 at 2024-10-08 10:16:00 had a heart rate of 99 bpm, blood pressure of 141/91 mmHg, blood sugar level of 112 mg/dL, oxygen saturation at 86%, and respiration rate of 29 breaths per minute.",
+    "Patient P004 at 2024-10-08 10:17:00 had a heart rate of 100 bpm, blood pressure of 142/92 mmHg, blood sugar level of 113 mg/dL, oxygen saturation at 85%, and respiration rate of 30 breaths per minute.",
+    "Patient P004 at 2024-10-08 10:18:00 had a heart rate of 101 bpm, blood pressure of 143/93 mmHg, blood sugar level of 115 mg/dL, oxygen saturation at 84%, and respiration rate of 30 breaths per minute.",
+    "Patient P004 at 2024-10-08 10:19:00 had a heart rate of 102 bpm, blood pressure of 144/94 mmHg, blood sugar level of 116 mg/dL, oxygen saturation at 83%, and respiration rate of 31 breaths per minute.",
+    "Patient P005 at 2024-10-08 10:15:00 had a heart rate of 68 bpm, blood pressure of 115/75 mmHg, blood sugar level of 98 mg/dL, oxygen saturation at 99%, and respiration rate of 15 breaths per minute.",
+    "Patient P005 at 2024-10-08 10:16:00 had a heart rate of 69 bpm, blood pressure of 116/75 mmHg, blood sugar level of 99 mg/dL, oxygen saturation at 99%, and respiration rate of 15 breaths per minute.",
+    "Patient P005 at 2024-10-08 10:17:00 had a heart rate of 70 bpm, blood pressure of 115/74 mmHg, blood sugar level of 98 mg/dL, oxygen saturation at 98%, and respiration rate of 15 breaths per minute.",
+    "Patient P005 at 2024-10-08 10:18:00 had a heart rate of 70 bpm, blood pressure of 115/74 mmHg, blood sugar level of 99 mg/dL, oxygen saturation at 98%, and respiration rate of 15 breaths per minute.",
+    "Patient P005 at 2024-10-08 10:19:00 had a heart rate of 69 bpm, blood pressure of 116/75 mmHg, blood sugar level of 98 mg/dL, oxygen saturation at 98%, and respiration rate of 15 breaths per minute."
+  ]
+}

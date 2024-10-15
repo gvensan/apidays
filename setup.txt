@@ -1,0 +1,17 @@
+# IMPORTANT: UPDATE setcloudbroker.env with your name for environment variable SOLACE_USER_NAME
+
+python3 -m venv env
+source env/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install solace-ai-connector
+source setcloudbroker.env
+source setcloudopenai.env
+pip install -U langchain_openai openai chromadb langchain-chroma
+
+# INSTALL solace-try-me CLI tool
+
+Goto https://github.com/SolaceLabs/solace-tryme-cli/releases
+Download the archive file matching your host OS
+Unzip the archive file and put the binary in a directory in PATH
+Follow the instruction under "Download the Archive" section of readme on the repo to take additional action, if required

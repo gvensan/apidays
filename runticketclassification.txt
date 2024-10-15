@@ -1,0 +1,10 @@
+# IMPORTANT 
+# 1. Run the following commands in separate terminal windows/tabs. 
+# 2. Update the field <USER_NAME> with the name you specified in the setcloudbroker.env file for SOLACE_USER_NAME environment variable.
+
+# Start connector
+solace-ai-connector apidays_ticket_classification.yaml
+
+# Start a solace receiver
+stm receive -t <USER_NAME>/> --config apidays-broker.json
+stm send -t <USER_NAME>/customer/tickets/new -f samples/ticket.json --config apidays-broker.json

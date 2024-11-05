@@ -1,0 +1,4 @@
+solace_ai_connector.log
+setcloudopenai copy.env
+setapidaysbroker copy.env
+chroma_data/

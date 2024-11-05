@@ -5,9 +5,9 @@ source env/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 pip install solace-ai-connector
+pip install -U langchain_openai openai chromadb langchain-chroma
 source setcloudbroker.env
 source setcloudopenai.env
-pip install -U langchain_openai openai chromadb langchain-chroma
 
 # INSTALL solace-try-me CLI tool
 

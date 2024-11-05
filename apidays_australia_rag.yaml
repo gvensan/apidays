@@ -1,21 +1,21 @@
 # OpenAI RAG (Retrieval Augmented Generation) example using ChromaDB
 # This will create 2 flows like these:
 #
-# Solace[topic:${SOLACE_USER_NAME}/patient/rag/data] -> embed and store in ChromaDB
-# Solace[topic:${SOLACE_USER_NAME}/patient/rag/query] -> search in ChromaDB -> OpenAI -> Solace[topic:${SOLACE_USER_NAME}/patient/rag/query/response]
+# Solace[topic:${SOLACE_USER_NAME}/australia/rag/data] -> embed and store in ChromaDB
+# Solace[topic:${SOLACE_USER_NAME}/australia/rag/query] -> search in ChromaDB -> OpenAI -> Solace[topic:${SOLACE_USER_NAME}/australia/rag/query/response]
 #
 # Load Data:
-# Send data to Solace topic `${SOLACE_USER_NAME}/patient/rag/data` with the following payload format:
+# Send data to Solace topic `${SOLACE_USER_NAME}/australia/rag/data` with the following payload format:
 # {
 #   "texts": [<text data 1>. <text data 2>, ...]
 # }
 #
 # RAG Query:
-# Send query to Solace topic `${SOLACE_USER_NAME}/patient/rag/query` with the following payload format:
+# Send query to Solace topic `${SOLACE_USER_NAME}/australia/rag/query` with the following payload format:
 # {
 #   "query": "<question or request as text>"
 # }
-# The response will be sent to Solace topic `${SOLACE_USER_NAME}/patient/rag/query/response`
+# The response will be sent to Solace topic `${SOLACE_USER_NAME}/australia/rag/query/response`
 #
 # Dependencies:
 # pip install -U langchain_openai openai chromadb langchain-chroma
@@ -55,7 +55,7 @@ flows:
         component_config:
           <<: *broker_connection
           broker_subscriptions:
-            - topic: ${SOLACE_USER_NAME}/patient/rag/data
+            - topic: ${SOLACE_USER_NAME}/australia/rag/data
               qos: 1
           payload_encoding: utf-8
           payload_format: json
@@ -77,7 +77,7 @@ flows:
             model: ${OPENAI_EMBEDDING_MODEL_NAME}
         input_transforms:
           - type: copy
-            source_value: topic:${SOLACE_USER_NAME}/patient/rag/data
+            source_value: topic:${SOLACE_USER_NAME}/australia/rag/data
             dest_expression: user_data.vector_input:metadatas.source
           - type: copy
             source_expression: input.payload:texts
@@ -94,7 +94,7 @@ flows:
         component_config:
           <<: *broker_connection
           broker_subscriptions:
-            - topic: ${SOLACE_USER_NAME}/patient/rag/query
+            - topic: ${SOLACE_USER_NAME}/australia/rag/query
               qos: 1
           payload_encoding: utf-8
           payload_format: json
@@ -140,19 +140,7 @@ flows:
 
           - type: copy
             source_expression: |
-              template:You are a helpful AI assistant. Using the provided context, help with the user's request below. Refrain to use any knowledge outside from the provided context, except for proven medical statistics. If the user query can not be answered using the provided context, reject user's query. Examine for dramatic changes in vitals and give factual observations. If it is related to patients data/query, just return data in a well-structured format conforming to the specified json structure without any context or explanation - want a json payload only.
-              {
-                patient_id, 
-                critical_changes {
-                  [
-                    vital,
-                    concern,
-                    details
-                  ]
-                },
-                immediate_attention_required,
-                recommendation
-              }, otherwise provide a textual response (and no need to provide context).
+              template:You are a helpful AI assistant. Using the provided context, help with the user's request below. Refrain to use any knowledge outside from the provided context, except for proven medical statistics. If the user query can not be answered using the provided context, reject user's query. Examine for dramatic changes in vitals and give factual observations.
               <context>
               {{text://user_data.retrieved_data}}
               </context>

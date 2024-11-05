@@ -227,8 +227,7 @@ flows:
             dest_expression: user_data.output:payload
           - type: copy
             source_expression: |
-              template: You are a helpful AI assistant who can review the identified classification and sentiment, and assign a priority level as
-              one of the following: Critical, High, Medium, Low. Return the identified priority string.
+              template: You are a helpful AI assistant who can analyze the problem described in the message along with the identified sentiment and classification and return an appropriate priority: critical, high, medium, or low. Return the identified priority string without quotes.
               Please help with the user's request below:
               <user-question>
               {{text://input.payload}}
@@ -340,7 +339,7 @@ flows:
                         params:
                           positional:
                             - evaluate_expression(input.payload:escalation)
-                            - "True"
+                            - "true"
                     - true
                     - false
             dest_expression: user_data.temp:action
